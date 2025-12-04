@@ -224,13 +224,23 @@ function App() {
   const generateQuestion = () => {
     const targetIndex = Math.floor(Math.random() * dictionary.length);
     const targetWord = dictionary[targetIndex];
+    const targetLength = targetWord.word.length;
 
-    let distractorIndex;
-    do {
-      distractorIndex = Math.floor(Math.random() * dictionary.length);
-    } while (distractorIndex === targetIndex);
+    // Filter dictionary for words with the same length, excluding the target word itself
+    const sameLengthWords = dictionary.filter(item => item.word.length === targetLength && item.word !== targetWord.word);
 
-    const distractorWord = dictionary[distractorIndex];
+    let distractorWord;
+    if (sameLengthWords.length > 0) {
+      const distractorIndex = Math.floor(Math.random() * sameLengthWords.length);
+      distractorWord = sameLengthWords[distractorIndex];
+    } else {
+      // Fallback if no same-length word found (should be rare with a large dictionary)
+      let distractorIndex;
+      do {
+        distractorIndex = Math.floor(Math.random() * dictionary.length);
+      } while (distractorIndex === targetIndex);
+      distractorWord = dictionary[distractorIndex];
+    }
 
     // Randomize options position
     const options = Math.random() < 0.5
@@ -252,7 +262,7 @@ function App() {
     const newQuestion = generateQuestion();
     setCurrentQuestion(newQuestion);
     // Small delay to allow render before speaking
-    setTimeout(() => speak(newQuestion.target.word), 5000);
+    setTimeout(() => speak(newQuestion.target.word), 500);
   };
 
   const handleOptionClick = (option) => {
@@ -280,9 +290,9 @@ function App() {
         setSelectedOption(null);
         const newQuestion = generateQuestion();
         setCurrentQuestion(newQuestion);
-        setTimeout(() => speak(newQuestion.target.word), 5000);
+        setTimeout(() => speak(newQuestion.target.word), 500);
       }
-    }, 2000);
+    }, 5000);
   };
 
   const restartGame = () => {
